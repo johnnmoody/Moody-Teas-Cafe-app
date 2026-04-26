@@ -1,5 +1,6 @@
 import UIKit
 import UserNotifications
+import WebKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,7 +11,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         requestPushPermission()
+        warmUpWebContent()
         return true
+    }
+
+    private func warmUpWebContent() {
+        let config = WKWebViewConfiguration()
+        config.processPool = WebViewController.sharedProcessPool
+        let warmUp = WKWebView(frame: .zero, configuration: config)
+        warmUp.loadHTMLString("<html></html>", baseURL: nil)
     }
 
     private func requestPushPermission() {

@@ -6,6 +6,7 @@ final class WebViewController: UIViewController {
 
     // MARK: - Constants
 
+    static let sharedProcessPool = WKProcessPool()
     private let appHost = "cafe.moodyteas.co"
     private let appURL  = URL(string: "https://cafe.moodyteas.co")!
 
@@ -34,24 +35,15 @@ final class WebViewController: UIViewController {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
-
-        // Prevent long-press text callout — feels more native
-        let noCallout = WKUserScript(
-            source: """
-            document.documentElement.style.webkitUserSelect = 'none';
-            document.documentElement.style.webkitTouchCallout = 'none';
-            """,
-            injectionTime: .atDocumentEnd,
-            forMainFrameOnly: true
-        )
-        config.userContentController.addUserScript(noCallout)
+        config.processPool = WebViewController.sharedProcessPool
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.allowsBackForwardNavigationGestures = true
+        webView.allowsBackForwardNavigationGestures = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.scrollView.delaysContentTouches = false
 
         let bg = UIColor(red: 22/255, green: 30/255, blue: 27/255, alpha: 1)
         view.backgroundColor = bg

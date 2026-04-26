@@ -32,4 +32,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
               let url = userActivity.webpageURL else { return }
         NotificationCenter.default.post(name: .openURL, object: url)
     }
+
+    // Custom URL scheme: moodyteas://auth?token=<magic_token>
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url,
+              url.scheme == "moodyteas" else { return }
+
+        // Extract token and load it as a full cafe URL so the webview handles auth
+        if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let token = components.queryItems?.first(where: { $0.name == "token" })?.value,
+           var dest = URLComponents(string: "https://cafe.moodyteas.co") {
+            dest.queryItems = [URLQueryItem(name: "token", value: token)]
+            if let destURL = dest.url {
+                NotificationCenter.default.post(name: .openURL, object: destURL)
+            }
+        } else {
+            // Bare moodyteas:// with no token — just bring app to foreground
+            NotificationCenter.default.post(name: .openURL, object: URL(string: "https://cafe.moodyteas.co")!)
+        }
+    }
 }
